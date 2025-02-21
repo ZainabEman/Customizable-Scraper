@@ -2,7 +2,7 @@ import streamlit as st
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from io import BytesIO
+import json
 
 def analyze_page(url):
     response = requests.get(url)
@@ -32,8 +32,9 @@ def scrape_data(url, selected_tags):
         return None
 
 def main():
-    st.title("Cutomizable Web Scraper")
+    st.title("Customizable Web Scraper")
     url = st.text_input("Enter the URL to scrape:")
+    
     if url:
         available_tags = analyze_page(url)
         if available_tags:
@@ -43,8 +44,26 @@ def main():
                 if df is not None and not df.empty:
                     st.write("### Scraped Data:")
                     st.dataframe(df)
+                    
+                    # CSV Download
                     csv = df.to_csv(index=False).encode('utf-8')
-                    st.download_button(label="Download CSV", data=csv, file_name="scraped_data.csv", mime="text/csv")
+                    st.download_button(
+                        label="Download as CSV",
+                        data=csv,
+                        file_name="scraped_data.csv",
+                        mime="text/csv",
+                        key="csv_download"
+                    )
+                    
+                    # JSON Download
+                    json_data = df.to_json(orient='records')
+                    st.download_button(
+                        label="Download as JSON",
+                        data=json_data,
+                        file_name="scraped_data.json",
+                        mime="application/json",
+                        key="json_download"
+                    )
                 else:
                     st.warning("No data found for the selected tags.")
         else:
